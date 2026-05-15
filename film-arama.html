@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yeşilçam Filmleri | Film Arama</title>
+  <meta name="description" content="Yeşilçam filmlerini film adı, oyuncu, yönetmen, tür, dönem ve yapım yılına göre arayın ve filtreleyin." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://yesilcamarsivi.com/film-arama.html" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Yeşilçam Filmleri" />
+  <meta property="og:title" content="Yeşilçam Filmleri | Film Arama" />
+  <meta property="og:description" content="Yeşilçam arşivinde film adı, oyuncu, yönetmen, tür, dönem ve yıla göre arama yapın." />
+  <meta property="og:url" content="https://yesilcamarsivi.com/film-arama.html" />
+  <meta property="og:image" content="https://yesilcamarsivi.com/logo.png" />
+  <meta property="og:image:alt" content="Yeşilçam Filmleri logosu" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Yeşilçam Filmleri | Film Arama" />
+  <meta name="twitter:description" content="Yeşilçam arşivinde film adı, oyuncu, yönetmen, tür, dönem ve yıla göre arama yapın." />
+  <meta name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -662,8 +677,50 @@
         .trim();
     }
 
+    function getSafeUrl(value) {
+      if (!value) return "";
+
+      try {
+        const url = new URL(String(value), window.location.href);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function setSafeBackgroundImage(element, urlValue) {
+      const safeUrl = getSafeUrl(urlValue);
+      element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
+    }
+
+    function createMovieCard(movie) {
+      const card = document.createElement("a");
+      card.className = "movie-card";
+      card.href = `movie.html?id=${encodeURIComponent(movie.id || "")}`;
+
+      const poster = document.createElement("div");
+      poster.className = "movie-poster";
+      setSafeBackgroundImage(poster, movie.poster);
+
+      const body = document.createElement("div");
+      body.className = "movie-body";
+
+      const title = document.createElement("div");
+      title.className = "movie-title";
+      title.textContent = movie.title || "";
+
+      const yearText = movie.year ? String(movie.year).trim() : "";
+      const meta = document.createElement("div");
+      meta.className = "movie-meta";
+      meta.textContent = `${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}`;
+
+      body.append(title, meta);
+      card.append(poster, body);
+      return card;
+    }
+
     function setOptions(selectElement, values, defaultLabel) {
-      selectElement.innerHTML = "";
+      selectElement.replaceChildren();
       const defaultOption = document.createElement("option");
       defaultOption.value = "";
       defaultOption.textContent = defaultLabel;
@@ -710,7 +767,7 @@
     }
 
     function renderMovies(movieList) {
-      resultsGrid.innerHTML = "";
+      resultsGrid.replaceChildren();
       emptyState.classList.remove("show");
       noResults.classList.remove("show");
 
@@ -728,21 +785,7 @@
       }
 
       movieList.forEach((movie) => {
-        const card = document.createElement("a");
-        card.className = "movie-card";
-        card.href = `movie.html?id=${encodeURIComponent(movie.id)}`;
-
-        const yearText = movie.year ? String(movie.year).trim() : "";
-
-        card.innerHTML = `
-          <div class="movie-poster" style="background-image: url('${movie.poster || ""}');"></div>
-          <div class="movie-body">
-            <div class="movie-title">${movie.title || ""}</div>
-            <div class="movie-meta">${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}</div>
-          </div>
-        `;
-
-        resultsGrid.appendChild(card);
+        resultsGrid.appendChild(createMovieCard(movie));
       });
     }
 
@@ -774,7 +817,7 @@
     }
 
     function clearAutocomplete() {
-      autocompleteBox.innerHTML = "";
+      autocompleteBox.replaceChildren();
     }
 
     function showAutocomplete(query) {
@@ -824,7 +867,7 @@
         buildFilterLists(allMovies);
         renderMovies(allMovies);
       } catch (error) {
-        resultsGrid.innerHTML = "";
+        resultsGrid.replaceChildren();
         resultsCount.textContent = "";
         emptyState.classList.add("show");
         emptyState.textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";
