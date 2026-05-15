@@ -358,23 +358,55 @@
 </main>
 
 <script>
-  const URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
 
   let films = [];
   let isDrawing = false;
 
+  function setLoadingState(message = "Filmler yükleniyor...") {
+    document.getElementById("filmTitle").textContent = "Yükleniyor...";
+    document.getElementById("filmMeta").style.display = "none";
+    document.getElementById("msg").textContent = message;
+    document.getElementById("goBtn").classList.remove("show");
+    showPosterPlaceholder();
+  }
+
+  function setUnavailableState(message) {
+    document.getElementById("filmTitle").textContent = "Film seçilemedi";
+    document.getElementById("filmMeta").style.display = "none";
+    document.getElementById("msg").textContent = message;
+    document.getElementById("goBtn").classList.remove("show");
+    showPosterPlaceholder();
+    isDrawing = false;
+  }
+
+  function normalizeFilmData(data) {
+    const movieList = Array.isArray(data)
+      ? data
+      : data.movies || data.films || data.data || [];
+
+    return Array.isArray(movieList) ? movieList.filter(Boolean) : [];
+  }
+
   async function loadFilms() {
     try {
-      const res = await fetch(URL + "?t=" + Date.now());
-      const data = await res.json();
+      const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+      if (!res.ok) throw new Error("Veri isteği başarısız oldu.");
 
-      if (Array.isArray(data)) {
-        films = data;
-      } else {
-        films = data.movies || data.films || data.data || [];
+      const data = await res.json();
+      films = normalizeFilmData(data);
+
+      if (!films.length) {
+        setUnavailableState("Henüz önerilecek film bulunamadı.");
+        return false;
       }
+
+      document.getElementById("msg").textContent = "";
+      return true;
     } catch (error) {
-      document.getElementById("msg").textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";
+      films = [];
+      setUnavailableState("Veriler alınamadı. Apps Script bağlantısını kontrol edin.");
+      return false;
     }
   }
 
@@ -402,7 +434,7 @@
       : extractedUrl;
 
     try {
-      const url = new URL(normalizedUrl, window.location.href);
+      const url = new window.URL(normalizedUrl, window.location.href);
       return ["http:", "https:"].includes(url.protocol) ? url.href : "";
     } catch (error) {
       return "";
@@ -414,7 +446,7 @@
     if (!safeUrl) return [];
 
     try {
-      const url = new URL(safeUrl);
+      const url = new window.URL(safeUrl);
       const driveFileMatch = url.pathname.match(/\/file\/d\/([^/]+)/);
       const driveId = url.hostname.includes("drive.google.com")
         ? url.searchParams.get("id") || (driveFileMatch ? driveFileMatch[1] : "")
@@ -441,7 +473,7 @@
     if (!safeUrl) return "";
 
     try {
-      const url = new URL(safeUrl);
+      const url = new window.URL(safeUrl);
       const hostname = url.hostname.replace(/^www\./, "");
       let videoId = "";
 
@@ -464,7 +496,7 @@
     if (!safeUrl) return false;
 
     try {
-      const hostname = new URL(safeUrl).hostname.replace(/^www\./, "");
+      const hostname = new window.URL(safeUrl).hostname.replace(/^www\./, "");
       return ["youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com"].includes(hostname);
     } catch (error) {
       return false;
@@ -589,40 +621,6 @@
     }
 
     tryPoster(posterUrls[activeIndex]);
-    const posterUrls = Array.isArray(urls) ? urls.filter(Boolean) : [urls].filter(Boolean);
-    let activeIndex = 0;
-
-    function applyPoster(url) {
-      posterBox.style.backgroundImage = `url("${url}")`;
-      posterPlaceholder.style.display = "none";
-      posterImg.style.display = "none";
-      posterImg.alt = `${title || "Film"} afişi`;
-      posterImg.src = url;
-    }
-
-    posterImg.onload = function () {
-      posterImg.style.display = "block";
-      posterPlaceholder.style.display = "none";
-    };
-
-    posterImg.onerror = function () {
-      activeIndex++;
-
-      if (activeIndex < posterUrls.length) {
-        applyPoster(posterUrls[activeIndex]);
-        return;
-      }
-
-      posterImg.removeAttribute("src");
-      posterImg.style.display = "none";
-      posterPlaceholder.style.display = "none";
-    };
-
-    applyPoster(posterUrls[activeIndex]);
-
-    if (posterImg.complete && posterImg.naturalWidth > 0) {
-      posterImg.onload();
-    }
   }
 
   function applyFilm(f) {
@@ -651,12 +649,13 @@
     document.getElementById("msg").textContent = "";
   }
 
-  function drawFilm(withAnimation = false) {
+  async function drawFilm(withAnimation = false) {
     if (isDrawing) return;
 
     if (!films.length) {
-      loadFilms().then(() => drawFilm(withAnimation));
-      return;
+      setLoadingState();
+      const loaded = await loadFilms();
+      if (!loaded) return;
     }
 
     isDrawing = true;
@@ -707,8 +706,9 @@
     }, 70);
   }
 
-  loadFilms().then(() => {
-    drawFilm(false);
+  setLoadingState();
+  loadFilms().then((loaded) => {
+    if (loaded) drawFilm(false);
   });
 
   let secretClickCount = 0;
