@@ -409,9 +409,9 @@
     }
   }
 
-  function normalizePosterUrl(value) {
+  function getPosterUrlCandidatesFromValue(value) {
     const safeUrl = getSafeUrl(value);
-    if (!safeUrl) return "";
+    if (!safeUrl) return [];
 
     try {
       const url = new URL(safeUrl);
@@ -421,16 +421,45 @@
         : "";
 
       if (driveId) {
-        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w1000`;
+        const encodedDriveId = encodeURIComponent(driveId);
+        return Array.from(new Set([
+          safeUrl,
+          `https://drive.google.com/thumbnail?id=${encodedDriveId}&sz=w1000`,
+          `https://drive.google.com/uc?export=view&id=${encodedDriveId}`,
+          `https://lh3.googleusercontent.com/d/${encodedDriveId}=w1000`
+        ]));
       }
 
-      return safeUrl;
+      return [safeUrl];
     } catch (error) {
-      return safeUrl;
+      return [safeUrl];
     }
   }
 
-  function getPosterUrl(film) {
+  function getYouTubeThumbnailUrl(value) {
+    const safeUrl = getSafeUrl(value);
+    if (!safeUrl) return "";
+
+    try {
+      const url = new URL(safeUrl);
+      const hostname = url.hostname.replace(/^www\./, "");
+      let videoId = "";
+
+      if (["youtube.com", "m.youtube.com"].includes(hostname) && url.pathname === "/watch") {
+        videoId = url.searchParams.get("v") || "";
+      }
+
+      if (hostname === "youtu.be") {
+        videoId = url.pathname.split("/").filter(Boolean)[0] || "";
+      }
+
+      return videoId ? `https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function getPosterUrls(film) {
     const movie = film || {};
     const posterFields = [
       "poster",
@@ -463,19 +492,20 @@
     ];
 
     for (const field of posterFields) {
-      const posterUrl = normalizePosterUrl(movie[field]);
-      if (posterUrl) return posterUrl;
+      const posterUrls = getPosterUrlCandidatesFromValue(movie[field]);
+      if (posterUrls.length) return posterUrls;
     }
 
     const posterKeyPattern = /(poster|image|img|afis|afiş|gorsel|görsel|resim)/i;
     for (const [key, value] of Object.entries(movie)) {
       if (!posterKeyPattern.test(key)) continue;
 
-      const posterUrl = normalizePosterUrl(value);
-      if (posterUrl) return posterUrl;
+      const posterUrls = getPosterUrlCandidatesFromValue(value);
+      if (posterUrls.length) return posterUrls;
     }
 
-    return "";
+    const youtubeThumbnailUrl = getYouTubeThumbnailUrl(movie.youtube || movie.youtubeUrl || movie.youtubeURL || movie["YouTube URL"]);
+    return youtubeThumbnailUrl ? [youtubeThumbnailUrl] : [];
   }
 
   function showPosterPlaceholder() {
@@ -489,14 +519,20 @@
     posterPlaceholder.style.display = "block";
   }
 
-  function showPosterImage(url, title) {
+  function showPosterImage(urls, title) {
     const posterBox = document.getElementById("posterBox");
     const posterImg = document.getElementById("posterImg");
     const posterPlaceholder = document.getElementById("posterPlaceholder");
+    const posterUrls = Array.isArray(urls) ? urls.filter(Boolean) : [urls].filter(Boolean);
+    let activeIndex = 0;
 
-    posterBox.style.backgroundImage = `url("${url}")`;
-    posterPlaceholder.style.display = "none";
-    posterImg.style.display = "none";
+    function applyPoster(url) {
+      posterBox.style.backgroundImage = `url("${url}")`;
+      posterPlaceholder.style.display = "none";
+      posterImg.style.display = "none";
+      posterImg.alt = `${title || "Film"} afişi`;
+      posterImg.src = url;
+    }
 
     posterImg.onload = function () {
       posterImg.style.display = "block";
@@ -504,13 +540,19 @@
     };
 
     posterImg.onerror = function () {
+      activeIndex++;
+
+      if (activeIndex < posterUrls.length) {
+        applyPoster(posterUrls[activeIndex]);
+        return;
+      }
+
       posterImg.removeAttribute("src");
       posterImg.style.display = "none";
       posterPlaceholder.style.display = "none";
     };
 
-    posterImg.alt = `${title || "Film"} afişi`;
-    posterImg.src = url;
+    applyPoster(posterUrls[activeIndex]);
 
     if (posterImg.complete && posterImg.naturalWidth > 0) {
       posterImg.onload();
@@ -524,10 +566,10 @@
     document.getElementById("actors").textContent = f.actors || "-";
     document.getElementById("filmMeta").style.display = "block";
 
-    const posterUrl = getPosterUrl(f);
+    const posterUrls = getPosterUrls(f);
 
-    if (posterUrl) {
-      showPosterImage(posterUrl, f.title);
+    if (posterUrls.length) {
+      showPosterImage(posterUrls, f.title);
     } else {
       showPosterPlaceholder();
     }
