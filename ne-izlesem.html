@@ -552,6 +552,43 @@
     const posterBox = document.getElementById("posterBox");
     const posterImg = document.getElementById("posterImg");
     const posterPlaceholder = document.getElementById("posterPlaceholder");
+    const posterUrls = Array.from(new Set(Array.isArray(urls) ? urls.filter(Boolean) : [urls].filter(Boolean)));
+    let activeIndex = 0;
+
+    posterImg.removeAttribute("src");
+    posterImg.alt = `${title || "Film"} afişi`;
+    posterImg.style.display = "none";
+
+    function tryPoster(url) {
+      posterBox.style.backgroundImage = `url("${url}")`;
+      posterPlaceholder.style.display = "none";
+
+      const probeImage = new Image();
+      probeImage.onload = function () {
+        posterBox.style.backgroundImage = `url("${url}")`;
+        posterPlaceholder.style.display = "none";
+      };
+
+      probeImage.onerror = function () {
+        activeIndex++;
+
+        if (activeIndex < posterUrls.length) {
+          tryPoster(posterUrls[activeIndex]);
+          return;
+        }
+
+        showPosterPlaceholder();
+      };
+
+      probeImage.src = url;
+    }
+
+    if (!posterUrls.length) {
+      showPosterPlaceholder();
+      return;
+    }
+
+    tryPoster(posterUrls[activeIndex]);
     const posterUrls = Array.isArray(urls) ? urls.filter(Boolean) : [urls].filter(Boolean);
     let activeIndex = 0;
 
