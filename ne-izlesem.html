@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ne İzlesem? | Yeşilçam</title>
+  <title>Ne İzlesem? | Yeşilçam Filmleri</title>
+  <meta name="description" content="Yeşilçam arşivinden rastgele bir film önerisi alın; afiş, yıl, yönetmen ve oyuncu bilgileriyle hızlıca seçim yapın." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://yesilcamarsivi.com/ne-izlesem.html" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Yeşilçam Filmleri" />
+  <meta property="og:title" content="Ne İzlesem? | Yeşilçam Filmleri" />
+  <meta property="og:description" content="Kararsız kaldığınızda Yeşilçam arşivinden rastgele bir film önerisi alın." />
+  <meta property="og:url" content="https://yesilcamarsivi.com/ne-izlesem.html" />
+  <meta property="og:image" content="https://yesilcamarsivi.com/logo.png" />
+  <meta property="og:image:alt" content="Yeşilçam Filmleri logosu" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ne İzlesem? | Yeşilçam Filmleri" />
+  <meta name="twitter:description" content="Yeşilçam arşivinden rastgele bir film önerisi alın." />
+  <meta name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -364,6 +379,17 @@
     return films[Math.floor(Math.random() * films.length)];
   }
 
+  function getSafeUrl(value) {
+    if (!value) return "";
+
+    try {
+      const url = new URL(String(value), window.location.href);
+      return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
   function applyFilm(f) {
     document.getElementById("filmTitle").textContent = f.title || "İsimsiz Film";
     document.getElementById("year").textContent = f.year || "-";
@@ -374,8 +400,10 @@
     const posterImg = document.getElementById("posterImg");
     const posterPlaceholder = document.getElementById("posterPlaceholder");
 
-    if (f.poster) {
-      posterImg.src = f.poster;
+    const posterUrl = getSafeUrl(f.poster);
+
+    if (posterUrl) {
+      posterImg.src = posterUrl;
       posterImg.style.display = "block";
       posterPlaceholder.style.display = "none";
     } else {
