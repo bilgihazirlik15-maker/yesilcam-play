@@ -4,6 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yeşilçam Filmleri | Film Detayı</title>
+  <meta id="metaDescription" name="description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta name="robots" content="index, follow" />
+  <link id="canonicalLink" rel="canonical" href="https://yesilcamarsivi.com/movie.html" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:type" content="video.movie" />
+  <meta property="og:site_name" content="Yeşilçam Filmleri" />
+  <meta id="ogTitle" property="og:title" content="Yeşilçam Filmleri | Film Detayı" />
+  <meta id="ogDescription" property="og:description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta id="ogUrl" property="og:url" content="https://yesilcamarsivi.com/movie.html" />
+  <meta id="ogImage" property="og:image" content="https://yesilcamarsivi.com/logo.png" />
+  <meta id="ogImageAlt" property="og:image:alt" content="Yeşilçam Filmleri logosu" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta id="twitterTitle" name="twitter:title" content="Yeşilçam Filmleri | Film Detayı" />
+  <meta id="twitterDescription" name="twitter:description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta id="twitterImage" name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
+  <script id="movieStructuredData" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Yeşilçam Filmi",
+      "url": "https://yesilcamarsivi.com/movie.html",
+      "inLanguage": "tr-TR"
+    }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -747,6 +771,66 @@
       element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
     }
 
+    function setMetaContent(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.setAttribute("content", value);
+    }
+
+    function setCanonicalUrl(url) {
+      const canonicalLink = document.getElementById("canonicalLink");
+      if (canonicalLink) canonicalLink.href = url;
+    }
+
+    function getShortDescription(text) {
+      const normalized = String(text || "").replace(/\s+/g, " ").trim();
+      if (normalized.length <= 155) return normalized;
+      return `${normalized.slice(0, 152).trim()}...`;
+    }
+
+    function updateSocialMeta(movie, title, description, poster) {
+      const pageUrl = window.location.href;
+      const safePoster = getSafeUrl(poster) || "https://yesilcamarsivi.com/logo.png";
+      const metaTitle = `Yeşilçam Filmleri | ${title}`;
+      const metaDescription = getShortDescription(description);
+
+      setCanonicalUrl(pageUrl);
+      setMetaContent("metaDescription", metaDescription);
+      setMetaContent("ogTitle", metaTitle);
+      setMetaContent("ogDescription", metaDescription);
+      setMetaContent("ogUrl", pageUrl);
+      setMetaContent("ogImage", safePoster);
+      setMetaContent("ogImageAlt", `${title} afişi`);
+      setMetaContent("twitterTitle", metaTitle);
+      setMetaContent("twitterDescription", metaDescription);
+      setMetaContent("twitterImage", safePoster);
+
+      const structuredData = document.getElementById("movieStructuredData");
+      if (structuredData) {
+        const actors = String(movie.actors || "")
+          .split(",")
+          .map((actor) => actor.trim())
+          .filter(Boolean)
+          .map((actor) => ({ "@type": "Person", name: actor }));
+
+        const jsonLd = {
+          "@context": "https://schema.org",
+          "@type": "Movie",
+          name: title,
+          description: metaDescription,
+          url: pageUrl,
+          image: safePoster,
+          inLanguage: "tr-TR"
+        };
+
+        if (movie.year) jsonLd.datePublished = String(movie.year);
+        if (movie.genre) jsonLd.genre = String(movie.genre);
+        if (movie.director) jsonLd.director = { "@type": "Person", name: String(movie.director) };
+        if (actors.length) jsonLd.actor = actors;
+
+        structuredData.textContent = JSON.stringify(jsonLd);
+      }
+    }
+
     function getYouTubeUrl(value) {
       const safeUrl = getSafeUrl(value);
       if (!safeUrl) return "";
@@ -970,6 +1054,7 @@
         const description = movie.description || "Bu film için açıklama eklenmemiş.";
         const poster = movie.poster || "";
 
+        updateSocialMeta(movie, title, description, poster);
         setSafeBackgroundImage(document.getElementById("heroBackdrop"), poster);
         setSafeBackgroundImage(document.getElementById("moviePoster"), poster);
 
