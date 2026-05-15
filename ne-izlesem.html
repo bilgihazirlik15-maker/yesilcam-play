@@ -364,6 +364,17 @@
     return films[Math.floor(Math.random() * films.length)];
   }
 
+  function getSafeUrl(value) {
+    if (!value) return "";
+
+    try {
+      const url = new URL(String(value), window.location.href);
+      return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
   function applyFilm(f) {
     document.getElementById("filmTitle").textContent = f.title || "İsimsiz Film";
     document.getElementById("year").textContent = f.year || "-";
@@ -374,8 +385,10 @@
     const posterImg = document.getElementById("posterImg");
     const posterPlaceholder = document.getElementById("posterPlaceholder");
 
-    if (f.poster) {
-      posterImg.src = f.poster;
+    const posterUrl = getSafeUrl(f.poster);
+
+    if (posterUrl) {
+      posterImg.src = posterUrl;
       posterImg.style.display = "block";
       posterPlaceholder.style.display = "none";
     } else {

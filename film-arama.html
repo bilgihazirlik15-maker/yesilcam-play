@@ -662,8 +662,50 @@
         .trim();
     }
 
+    function getSafeUrl(value) {
+      if (!value) return "";
+
+      try {
+        const url = new URL(String(value), window.location.href);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function setSafeBackgroundImage(element, urlValue) {
+      const safeUrl = getSafeUrl(urlValue);
+      element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
+    }
+
+    function createMovieCard(movie) {
+      const card = document.createElement("a");
+      card.className = "movie-card";
+      card.href = `movie.html?id=${encodeURIComponent(movie.id || "")}`;
+
+      const poster = document.createElement("div");
+      poster.className = "movie-poster";
+      setSafeBackgroundImage(poster, movie.poster);
+
+      const body = document.createElement("div");
+      body.className = "movie-body";
+
+      const title = document.createElement("div");
+      title.className = "movie-title";
+      title.textContent = movie.title || "";
+
+      const yearText = movie.year ? String(movie.year).trim() : "";
+      const meta = document.createElement("div");
+      meta.className = "movie-meta";
+      meta.textContent = `${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}`;
+
+      body.append(title, meta);
+      card.append(poster, body);
+      return card;
+    }
+
     function setOptions(selectElement, values, defaultLabel) {
-      selectElement.innerHTML = "";
+      selectElement.replaceChildren();
       const defaultOption = document.createElement("option");
       defaultOption.value = "";
       defaultOption.textContent = defaultLabel;
@@ -710,7 +752,7 @@
     }
 
     function renderMovies(movieList) {
-      resultsGrid.innerHTML = "";
+      resultsGrid.replaceChildren();
       emptyState.classList.remove("show");
       noResults.classList.remove("show");
 
@@ -728,21 +770,7 @@
       }
 
       movieList.forEach((movie) => {
-        const card = document.createElement("a");
-        card.className = "movie-card";
-        card.href = `movie.html?id=${encodeURIComponent(movie.id)}`;
-
-        const yearText = movie.year ? String(movie.year).trim() : "";
-
-        card.innerHTML = `
-          <div class="movie-poster" style="background-image: url('${movie.poster || ""}');"></div>
-          <div class="movie-body">
-            <div class="movie-title">${movie.title || ""}</div>
-            <div class="movie-meta">${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}</div>
-          </div>
-        `;
-
-        resultsGrid.appendChild(card);
+        resultsGrid.appendChild(createMovieCard(movie));
       });
     }
 
@@ -774,7 +802,7 @@
     }
 
     function clearAutocomplete() {
-      autocompleteBox.innerHTML = "";
+      autocompleteBox.replaceChildren();
     }
 
     function showAutocomplete(query) {
@@ -824,7 +852,7 @@
         buildFilterLists(allMovies);
         renderMovies(allMovies);
       } catch (error) {
-        resultsGrid.innerHTML = "";
+        resultsGrid.replaceChildren();
         resultsCount.textContent = "";
         emptyState.classList.add("show");
         emptyState.textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";

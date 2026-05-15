@@ -410,8 +410,56 @@
       return [...movies].slice(-count).reverse();
     }
 
+    function getSafeUrl(value) {
+      if (!value) return "";
+
+      try {
+        const url = new URL(String(value), window.location.href);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function setSafeBackgroundImage(element, urlValue) {
+      const safeUrl = getSafeUrl(urlValue);
+      element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
+    }
+
+    function createMovieCard(movie) {
+      const card = document.createElement("a");
+      card.className = "movie-card";
+      card.href = `movie.html?id=${encodeURIComponent(movie.id || "")}`;
+
+      const poster = document.createElement("div");
+      poster.className = "movie-poster";
+      setSafeBackgroundImage(poster, movie.poster);
+
+      const body = document.createElement("div");
+      body.className = "movie-body";
+
+      const title = document.createElement("div");
+      title.className = "movie-title";
+      title.append(document.createTextNode(movie.title || ""));
+
+      const yearText = movie.year !== undefined && movie.year !== null
+        ? String(movie.year).trim()
+        : "";
+
+      if (yearText) {
+        const year = document.createElement("span");
+        year.className = "movie-year";
+        year.textContent = `(${yearText})`;
+        title.append(document.createTextNode(" "), year);
+      }
+
+      body.appendChild(title);
+      card.append(poster, body);
+      return card;
+    }
+
     function renderDiscover(movies) {
-      discoverGrid.innerHTML = "";
+      discoverGrid.replaceChildren();
 
       if (!movies.length) {
         emptyState.classList.add("show");
@@ -421,25 +469,7 @@
       emptyState.classList.remove("show");
 
       movies.forEach((movie) => {
-        const card = document.createElement("a");
-        card.className = "movie-card";
-        card.href = `movie.html?id=${movie.id}`;
-
-        const yearText = movie.year !== undefined && movie.year !== null
-          ? String(movie.year).trim()
-          : "";
-
-        card.innerHTML = `
-          <div class="movie-poster" style="background-image: url('${movie.poster || ""}');"></div>
-          <div class="movie-body">
-            <div class="movie-title">
-              ${movie.title || ""}
-              ${yearText ? `<span class="movie-year">(${yearText})</span>` : ""}
-            </div>
-          </div>
-        `;
-
-        discoverGrid.appendChild(card);
+        discoverGrid.appendChild(createMovieCard(movie));
       });
     }
 
@@ -467,7 +497,7 @@
         animateCount(allMovies.length);
         renderDiscover(getLatestMovies(allMovies, 8));
       } catch (error) {
-        discoverGrid.innerHTML = "";
+        discoverGrid.replaceChildren();
         emptyState.classList.add("show");
         emptyState.textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";
       }
