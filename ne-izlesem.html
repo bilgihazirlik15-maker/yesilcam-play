@@ -496,13 +496,19 @@
 
     posterBox.style.backgroundImage = `url("${url}")`;
     posterPlaceholder.style.display = "none";
+    posterImg.style.display = "none";
 
     posterImg.onload = function () {
       posterImg.style.display = "block";
       posterPlaceholder.style.display = "none";
     };
 
-    posterImg.onerror = showPosterPlaceholder;
+    posterImg.onerror = function () {
+      posterImg.removeAttribute("src");
+      posterImg.style.display = "none";
+      posterPlaceholder.style.display = "none";
+    };
+
     posterImg.alt = `${title || "Film"} afişi`;
     posterImg.src = url;
 
