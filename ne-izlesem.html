@@ -422,11 +422,12 @@
 
       if (driveId) {
         const encodedDriveId = encodeURIComponent(driveId);
-        return [
+        return Array.from(new Set([
+          safeUrl,
           `https://drive.google.com/thumbnail?id=${encodedDriveId}&sz=w1000`,
           `https://drive.google.com/uc?export=view&id=${encodedDriveId}`,
           `https://lh3.googleusercontent.com/d/${encodedDriveId}=w1000`
-        ];
+        ]));
       }
 
       return [safeUrl];
