@@ -4,6 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yeşilçam Filmleri | Film Detayı</title>
+  <meta id="metaDescription" name="description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta name="robots" content="index, follow" />
+  <link id="canonicalLink" rel="canonical" href="https://yesilcamarsivi.com/movie.html" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:type" content="video.movie" />
+  <meta property="og:site_name" content="Yeşilçam Filmleri" />
+  <meta id="ogTitle" property="og:title" content="Yeşilçam Filmleri | Film Detayı" />
+  <meta id="ogDescription" property="og:description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta id="ogUrl" property="og:url" content="https://yesilcamarsivi.com/movie.html" />
+  <meta id="ogImage" property="og:image" content="https://yesilcamarsivi.com/logo.png" />
+  <meta id="ogImageAlt" property="og:image:alt" content="Yeşilçam Filmleri logosu" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta id="twitterTitle" name="twitter:title" content="Yeşilçam Filmleri | Film Detayı" />
+  <meta id="twitterDescription" name="twitter:description" content="Yeşilçam filmi için afiş, yıl, yönetmen, oyuncular, açıklama ve izleme bağlantısı detaylarını görüntüleyin." />
+  <meta id="twitterImage" name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
+  <script id="movieStructuredData" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Yeşilçam Filmi",
+      "url": "https://yesilcamarsivi.com/movie.html",
+      "inLanguage": "tr-TR"
+    }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -731,23 +755,116 @@
         .trim();
     }
 
-    function convertToEmbed(url) {
-      if (!url || typeof url !== "string") return "";
+    function getSafeUrl(value) {
+      if (!value) return "";
 
       try {
-        if (url.includes("youtube.com/embed/")) return url;
+        const url = new URL(String(value), window.location.href);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
 
-        if (url.includes("watch?v=")) {
-          const parsedUrl = new URL(url);
-          const videoId = parsedUrl.searchParams.get("v");
-          return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+    function setSafeBackgroundImage(element, urlValue) {
+      const safeUrl = getSafeUrl(urlValue);
+      element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
+    }
+
+    function setMetaContent(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.setAttribute("content", value);
+    }
+
+    function setCanonicalUrl(url) {
+      const canonicalLink = document.getElementById("canonicalLink");
+      if (canonicalLink) canonicalLink.href = url;
+    }
+
+    function getShortDescription(text) {
+      const normalized = String(text || "").replace(/\s+/g, " ").trim();
+      if (normalized.length <= 155) return normalized;
+      return `${normalized.slice(0, 152).trim()}...`;
+    }
+
+    function updateSocialMeta(movie, title, description, poster) {
+      const pageUrl = window.location.href;
+      const safePoster = getSafeUrl(poster) || "https://yesilcamarsivi.com/logo.png";
+      const metaTitle = `Yeşilçam Filmleri | ${title}`;
+      const metaDescription = getShortDescription(description);
+
+      setCanonicalUrl(pageUrl);
+      setMetaContent("metaDescription", metaDescription);
+      setMetaContent("ogTitle", metaTitle);
+      setMetaContent("ogDescription", metaDescription);
+      setMetaContent("ogUrl", pageUrl);
+      setMetaContent("ogImage", safePoster);
+      setMetaContent("ogImageAlt", `${title} afişi`);
+      setMetaContent("twitterTitle", metaTitle);
+      setMetaContent("twitterDescription", metaDescription);
+      setMetaContent("twitterImage", safePoster);
+
+      const structuredData = document.getElementById("movieStructuredData");
+      if (structuredData) {
+        const actors = String(movie.actors || "")
+          .split(",")
+          .map((actor) => actor.trim())
+          .filter(Boolean)
+          .map((actor) => ({ "@type": "Person", name: actor }));
+
+        const jsonLd = {
+          "@context": "https://schema.org",
+          "@type": "Movie",
+          name: title,
+          description: metaDescription,
+          url: pageUrl,
+          image: safePoster,
+          inLanguage: "tr-TR"
+        };
+
+        if (movie.year) jsonLd.datePublished = String(movie.year);
+        if (movie.genre) jsonLd.genre = String(movie.genre);
+        if (movie.director) jsonLd.director = { "@type": "Person", name: String(movie.director) };
+        if (actors.length) jsonLd.actor = actors;
+
+        structuredData.textContent = JSON.stringify(jsonLd);
+      }
+    }
+
+    function getYouTubeUrl(value) {
+      const safeUrl = getSafeUrl(value);
+      if (!safeUrl) return "";
+
+      try {
+        const url = new URL(safeUrl);
+        const hostname = url.hostname.replace(/^www\./, "");
+        return ["youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com"].includes(hostname) ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function convertToEmbed(url) {
+      const youtubeUrl = getYouTubeUrl(url);
+      if (!youtubeUrl) return "";
+
+      try {
+        const parsedUrl = new URL(youtubeUrl);
+        const hostname = parsedUrl.hostname.replace(/^www\./, "");
+
+        if (["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(hostname) && parsedUrl.pathname.startsWith("/embed/")) {
+          const videoId = parsedUrl.pathname.split("/").filter(Boolean)[1] || "";
+          return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : "";
         }
 
-        if (url.includes("youtu.be/")) {
-          const parsedUrl = new URL(url);
-          const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
-          const videoId = pathParts[0] || "";
-          return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+        if (["youtube.com", "m.youtube.com"].includes(hostname) && parsedUrl.pathname === "/watch") {
+          const videoId = parsedUrl.searchParams.get("v");
+          return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : "";
+        }
+
+        if (hostname === "youtu.be") {
+          const videoId = parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
+          return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : "";
         }
       } catch (error) {
         return "";
@@ -756,26 +873,43 @@
       return "";
     }
 
-    function createMetaTags(movie) {
-      const tags = [];
-      if (movie.year) tags.push(String(movie.year));
-      if (movie.genre) tags.push(String(movie.genre));
-      if (movie.period) tags.push(String(movie.period));
-      return tags.map(tag => `<span>${tag}</span>`).join("");
+    function renderMetaTags(container, movie) {
+      container.replaceChildren();
+
+      [movie.year, movie.genre, movie.period]
+        .map((tag) => String(tag || "").trim())
+        .filter(Boolean)
+        .forEach((tag) => {
+          const item = document.createElement("span");
+          item.textContent = tag;
+          container.appendChild(item);
+        });
     }
 
-    function createActorLinks(actorsText) {
+    function renderActorLinks(container, actorsText) {
       const actors = String(actorsText || "")
         .split(",")
         .map(actor => actor.trim())
         .filter(Boolean);
 
-      if (!actors.length) return "-";
+      container.replaceChildren();
 
-      return actors.map(actor => {
-        const actorParam = encodeURIComponent(actor);
-        return `<a class="actor-link" href="film-arama.html?actor=${actorParam}">${actor}</a>`;
-      }).join(", ");
+      if (!actors.length) {
+        container.textContent = "-";
+        return;
+      }
+
+      actors.forEach((actor, index) => {
+        if (index > 0) {
+          container.append(document.createTextNode(", "));
+        }
+
+        const link = document.createElement("a");
+        link.className = "actor-link";
+        link.href = `film-arama.html?actor=${encodeURIComponent(actor)}`;
+        link.textContent = actor;
+        container.appendChild(link);
+      });
     }
 
     function getSimilarMovies(currentMovie, allMovies) {
@@ -818,7 +952,7 @@
       const similarEmpty = document.getElementById("similarEmpty");
 
       const similarMovies = getSimilarMovies(currentMovie, allMovies);
-      similarGrid.innerHTML = "";
+      similarGrid.replaceChildren();
 
       if (!similarMovies.length) {
         similarSection.style.display = "block";
@@ -832,18 +966,26 @@
       similarMovies.forEach(movie => {
         const card = document.createElement("a");
         card.className = "similar-card";
-        card.href = `movie.html?id=${movie.id}`;
+        card.href = `movie.html?id=${encodeURIComponent(movie.id || "")}`;
+
+        const poster = document.createElement("div");
+        poster.className = "similar-poster";
+        setSafeBackgroundImage(poster, movie.poster);
+
+        const body = document.createElement("div");
+        body.className = "similar-body";
+
+        const title = document.createElement("div");
+        title.className = "similar-title";
+        title.textContent = movie.title || "";
 
         const yearText = movie.year ? String(movie.year).trim() : "";
+        const meta = document.createElement("div");
+        meta.className = "similar-meta";
+        meta.textContent = `${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}`;
 
-        card.innerHTML = `
-          <div class="similar-poster" style="background-image: url('${movie.poster || ""}');"></div>
-          <div class="similar-body">
-            <div class="similar-title">${movie.title || ""}</div>
-            <div class="similar-meta">${movie.genre || ""}${yearText ? ` • ${yearText}` : ""}</div>
-          </div>
-        `;
-
+        body.append(title, meta);
+        card.append(poster, body);
         similarGrid.appendChild(card);
       });
     }
@@ -857,10 +999,12 @@
       const youtubeOpenLinkBottom = document.getElementById("youtubeOpenLinkBottom");
       const youtubeOpenLinkFallback = document.getElementById("youtubeOpenLinkFallback");
 
-      if (movie.youtube) {
-        youtubeOpenLinkTop.href = movie.youtube;
-        youtubeOpenLinkBottom.href = movie.youtube;
-        youtubeOpenLinkFallback.href = movie.youtube;
+      const youtubeUrl = getYouTubeUrl(movie.youtube);
+
+      if (youtubeUrl) {
+        youtubeOpenLinkTop.href = youtubeUrl;
+        youtubeOpenLinkBottom.href = youtubeUrl;
+        youtubeOpenLinkFallback.href = youtubeUrl;
         youtubeOpenLinkFallback.style.display = "inline-block";
       } else {
         youtubeOpenLinkTop.href = "#";
@@ -910,16 +1054,17 @@
         const description = movie.description || "Bu film için açıklama eklenmemiş.";
         const poster = movie.poster || "";
 
-        document.getElementById("heroBackdrop").style.backgroundImage = poster ? `url('${poster}')` : "none";
-        document.getElementById("moviePoster").style.backgroundImage = poster ? `url('${poster}')` : "none";
+        updateSocialMeta(movie, title, description, poster);
+        setSafeBackgroundImage(document.getElementById("heroBackdrop"), poster);
+        setSafeBackgroundImage(document.getElementById("moviePoster"), poster);
 
         document.getElementById("movieTitle").textContent = title;
         document.getElementById("movieLead").textContent = `${title} filmi için temel bilgiler, açıklama ve izleme bağlantısı bu sayfada yer alıyor.`;
-        document.getElementById("movieMetaTags").innerHTML = createMetaTags(movie);
+        renderMetaTags(document.getElementById("movieMetaTags"), movie);
 
         document.getElementById("movieDescription").textContent = description;
         document.getElementById("movieDirector").textContent = movie.director || "-";
-        document.getElementById("movieActors").innerHTML = createActorLinks(movie.actors || "");
+        renderActorLinks(document.getElementById("movieActors"), movie.actors || "");
         document.getElementById("movieGenre").textContent = movie.genre || "-";
         document.getElementById("moviePeriod").textContent = movie.period || "-";
 
