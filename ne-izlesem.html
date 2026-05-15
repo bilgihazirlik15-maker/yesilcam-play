@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ne İzlesem? | Yeşilçam</title>
+  <title>Ne İzlesem? | Yeşilçam Filmleri</title>
+  <meta name="description" content="Yeşilçam arşivinden rastgele bir film önerisi alın; afiş, yıl, yönetmen ve oyuncu bilgileriyle hızlıca seçim yapın." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://yesilcamarsivi.com/ne-izlesem.html" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Yeşilçam Filmleri" />
+  <meta property="og:title" content="Ne İzlesem? | Yeşilçam Filmleri" />
+  <meta property="og:description" content="Kararsız kaldığınızda Yeşilçam arşivinden rastgele bir film önerisi alın." />
+  <meta property="og:url" content="https://yesilcamarsivi.com/ne-izlesem.html" />
+  <meta property="og:image" content="https://yesilcamarsivi.com/logo.png" />
+  <meta property="og:image:alt" content="Yeşilçam Filmleri logosu" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ne İzlesem? | Yeşilçam Filmleri" />
+  <meta name="twitter:description" content="Yeşilçam arşivinden rastgele bir film önerisi alın." />
+  <meta name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -141,6 +156,9 @@
       overflow: hidden;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.04);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -340,28 +358,269 @@
 </main>
 
 <script>
-  const URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
 
   let films = [];
   let isDrawing = false;
 
+  function setLoadingState(message = "Filmler yükleniyor...") {
+    document.getElementById("filmTitle").textContent = "Yükleniyor...";
+    document.getElementById("filmMeta").style.display = "none";
+    document.getElementById("msg").textContent = message;
+    document.getElementById("goBtn").classList.remove("show");
+    showPosterPlaceholder();
+  }
+
+  function setUnavailableState(message) {
+    document.getElementById("filmTitle").textContent = "Film seçilemedi";
+    document.getElementById("filmMeta").style.display = "none";
+    document.getElementById("msg").textContent = message;
+    document.getElementById("goBtn").classList.remove("show");
+    showPosterPlaceholder();
+    isDrawing = false;
+  }
+
+  function normalizeFilmData(data) {
+    const movieList = Array.isArray(data)
+      ? data
+      : data.movies || data.films || data.data || [];
+
+    return Array.isArray(movieList) ? movieList.filter(Boolean) : [];
+  }
+
   async function loadFilms() {
     try {
-      const res = await fetch(URL + "?t=" + Date.now());
-      const data = await res.json();
+      const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+      if (!res.ok) throw new Error("Veri isteği başarısız oldu.");
 
-      if (Array.isArray(data)) {
-        films = data;
-      } else {
-        films = data.movies || data.films || data.data || [];
+      const data = await res.json();
+      films = normalizeFilmData(data);
+
+      if (!films.length) {
+        setUnavailableState("Henüz önerilecek film bulunamadı.");
+        return false;
       }
+
+      document.getElementById("msg").textContent = "";
+      return true;
     } catch (error) {
-      document.getElementById("msg").textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";
+      films = [];
+      setUnavailableState("Veriler alınamadı. Apps Script bağlantısını kontrol edin.");
+      return false;
     }
   }
 
   function getRandomFilm() {
     return films[Math.floor(Math.random() * films.length)];
+  }
+
+  function extractUrl(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+
+    const quotedUrlMatch = text.match(/["'](https?:\/\/[^"']+|www\.[^"']+)["']/i);
+    if (quotedUrlMatch) return quotedUrlMatch[1];
+
+    const plainUrlMatch = text.match(/https?:\/\/[^\s,)]+|www\.[^\s,)]+/i);
+    return plainUrlMatch ? plainUrlMatch[0] : text;
+  }
+
+  function getSafeUrl(value) {
+    const extractedUrl = extractUrl(value);
+    if (!extractedUrl) return "";
+
+    const normalizedUrl = extractedUrl.startsWith("www.")
+      ? `https://${extractedUrl}`
+      : extractedUrl;
+
+    try {
+      const url = new window.URL(normalizedUrl, window.location.href);
+      return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function getPosterUrlCandidatesFromValue(value) {
+    const safeUrl = getSafeUrl(value);
+    if (!safeUrl) return [];
+
+    try {
+      const url = new window.URL(safeUrl);
+      const driveFileMatch = url.pathname.match(/\/file\/d\/([^/]+)/);
+      const driveId = url.hostname.includes("drive.google.com")
+        ? url.searchParams.get("id") || (driveFileMatch ? driveFileMatch[1] : "")
+        : "";
+
+      if (driveId) {
+        const encodedDriveId = encodeURIComponent(driveId);
+        return Array.from(new Set([
+          safeUrl,
+          `https://drive.google.com/thumbnail?id=${encodedDriveId}&sz=w1000`,
+          `https://drive.google.com/uc?export=view&id=${encodedDriveId}`,
+          `https://lh3.googleusercontent.com/d/${encodedDriveId}=w1000`
+        ]));
+      }
+
+      return [safeUrl];
+    } catch (error) {
+      return [safeUrl];
+    }
+  }
+
+  function getYouTubeThumbnailUrl(value) {
+    const safeUrl = getSafeUrl(value);
+    if (!safeUrl) return "";
+
+    try {
+      const url = new window.URL(safeUrl);
+      const hostname = url.hostname.replace(/^www\./, "");
+      let videoId = "";
+
+      if (["youtube.com", "m.youtube.com"].includes(hostname) && url.pathname === "/watch") {
+        videoId = url.searchParams.get("v") || "";
+      }
+
+      if (hostname === "youtu.be") {
+        videoId = url.pathname.split("/").filter(Boolean)[0] || "";
+      }
+
+      return videoId ? `https://img.youtube.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function isYouTubeUrl(value) {
+    const safeUrl = getSafeUrl(value);
+    if (!safeUrl) return false;
+
+    try {
+      const hostname = new window.URL(safeUrl).hostname.replace(/^www\./, "");
+      return ["youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com"].includes(hostname);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function getPosterUrls(film) {
+    const movie = film || {};
+    const posterFields = [
+      "poster",
+      "posterUrl",
+      "posterURL",
+      "poster_url",
+      "posterLink",
+      "poster_link",
+      "Poster",
+      "Poster URL",
+      "Poster Link",
+      "image",
+      "imageUrl",
+      "imageURL",
+      "image_url",
+      "Image",
+      "Image URL",
+      "img",
+      "afis",
+      "afiş",
+      "afisUrl",
+      "afişUrl",
+      "afisLink",
+      "afişLink",
+      "Afiş",
+      "Afiş URL",
+      "Afis URL",
+      "Afiş Linki",
+      "Afis Linki",
+      "gorsel",
+      "görsel",
+      "Görsel",
+      "Görsel URL",
+      "resim",
+      "resimUrl",
+      "resimLink",
+      "Resim",
+      "Resim URL",
+      "Resim Linki"
+    ];
+
+    for (const field of posterFields) {
+      const posterUrls = getPosterUrlCandidatesFromValue(movie[field]);
+      if (posterUrls.length) return posterUrls;
+    }
+
+    const posterKeyPattern = /(poster|image|img|afis|afiş|gorsel|görsel|resim)/i;
+    for (const [key, value] of Object.entries(movie)) {
+      if (!posterKeyPattern.test(key)) continue;
+
+      const posterUrls = getPosterUrlCandidatesFromValue(value);
+      if (posterUrls.length) return posterUrls;
+    }
+
+    for (const [key, value] of Object.entries(movie)) {
+      if (isYouTubeUrl(value) || /youtube/i.test(key)) continue;
+
+      const posterUrls = getPosterUrlCandidatesFromValue(value);
+      if (posterUrls.length) return posterUrls;
+    }
+
+    const youtubeThumbnailUrl = getYouTubeThumbnailUrl(movie.youtube || movie.youtubeUrl || movie.youtubeURL || movie["YouTube URL"]);
+    return youtubeThumbnailUrl ? [youtubeThumbnailUrl] : [];
+  }
+
+  function showPosterPlaceholder() {
+    const posterBox = document.getElementById("posterBox");
+    const posterImg = document.getElementById("posterImg");
+    const posterPlaceholder = document.getElementById("posterPlaceholder");
+
+    posterBox.style.backgroundImage = "none";
+    posterImg.removeAttribute("src");
+    posterImg.style.display = "none";
+    posterPlaceholder.style.display = "block";
+  }
+
+  function showPosterImage(urls, title) {
+    const posterBox = document.getElementById("posterBox");
+    const posterImg = document.getElementById("posterImg");
+    const posterPlaceholder = document.getElementById("posterPlaceholder");
+    const posterUrls = Array.from(new Set(Array.isArray(urls) ? urls.filter(Boolean) : [urls].filter(Boolean)));
+    let activeIndex = 0;
+
+    posterImg.removeAttribute("src");
+    posterImg.alt = `${title || "Film"} afişi`;
+    posterImg.style.display = "none";
+
+    function tryPoster(url) {
+      posterBox.style.backgroundImage = `url("${url}")`;
+      posterPlaceholder.style.display = "none";
+
+      const probeImage = new Image();
+      probeImage.onload = function () {
+        posterBox.style.backgroundImage = `url("${url}")`;
+        posterPlaceholder.style.display = "none";
+      };
+
+      probeImage.onerror = function () {
+        activeIndex++;
+
+        if (activeIndex < posterUrls.length) {
+          tryPoster(posterUrls[activeIndex]);
+          return;
+        }
+
+        showPosterPlaceholder();
+      };
+
+      probeImage.src = url;
+    }
+
+    if (!posterUrls.length) {
+      showPosterPlaceholder();
+      return;
+    }
+
+    tryPoster(posterUrls[activeIndex]);
   }
 
   function applyFilm(f) {
@@ -371,17 +630,12 @@
     document.getElementById("actors").textContent = f.actors || "-";
     document.getElementById("filmMeta").style.display = "block";
 
-    const posterImg = document.getElementById("posterImg");
-    const posterPlaceholder = document.getElementById("posterPlaceholder");
+    const posterUrls = getPosterUrls(f);
 
-    if (f.poster) {
-      posterImg.src = f.poster;
-      posterImg.style.display = "block";
-      posterPlaceholder.style.display = "none";
+    if (posterUrls.length) {
+      showPosterImage(posterUrls, f.title);
     } else {
-      posterImg.removeAttribute("src");
-      posterImg.style.display = "none";
-      posterPlaceholder.style.display = "block";
+      showPosterPlaceholder();
     }
 
     const goBtn = document.getElementById("goBtn");
@@ -395,12 +649,13 @@
     document.getElementById("msg").textContent = "";
   }
 
-  function drawFilm(withAnimation = false) {
+  async function drawFilm(withAnimation = false) {
     if (isDrawing) return;
 
     if (!films.length) {
-      loadFilms().then(() => drawFilm(withAnimation));
-      return;
+      setLoadingState();
+      const loaded = await loadFilms();
+      if (!loaded) return;
     }
 
     isDrawing = true;
@@ -451,8 +706,9 @@
     }, 70);
   }
 
-  loadFilms().then(() => {
-    drawFilm(false);
+  setLoadingState();
+  loadFilms().then((loaded) => {
+    if (loaded) drawFilm(false);
   });
 
   let secretClickCount = 0;
