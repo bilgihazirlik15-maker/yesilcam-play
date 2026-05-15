@@ -383,11 +383,82 @@
     if (!value) return "";
 
     try {
-      const url = new URL(String(value), window.location.href);
+      const url = new URL(String(value).trim(), window.location.href);
       return ["http:", "https:"].includes(url.protocol) ? url.href : "";
     } catch (error) {
       return "";
     }
+  }
+
+  function normalizePosterUrl(value) {
+    const safeUrl = getSafeUrl(value);
+    if (!safeUrl) return "";
+
+    try {
+      const url = new URL(safeUrl);
+      const driveFileMatch = url.pathname.match(/\/file\/d\/([^/]+)/);
+      const driveId = url.hostname.includes("drive.google.com")
+        ? url.searchParams.get("id") || (driveFileMatch ? driveFileMatch[1] : "")
+        : "";
+
+      if (driveId) {
+        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w1000`;
+      }
+
+      return safeUrl;
+    } catch (error) {
+      return safeUrl;
+    }
+  }
+
+  function getPosterUrl(film) {
+    const movie = film || {};
+    const posterFields = [
+      "poster",
+      "posterUrl",
+      "posterURL",
+      "image",
+      "imageUrl",
+      "imageURL",
+      "img",
+      "afis",
+      "afiş",
+      "afisUrl",
+      "afişUrl"
+    ];
+
+    for (const field of posterFields) {
+      const posterUrl = normalizePosterUrl(movie[field]);
+      if (posterUrl) return posterUrl;
+    }
+
+    return "";
+  }
+
+  function showPosterPlaceholder() {
+    const posterImg = document.getElementById("posterImg");
+    const posterPlaceholder = document.getElementById("posterPlaceholder");
+
+    posterImg.removeAttribute("src");
+    posterImg.style.display = "none";
+    posterPlaceholder.style.display = "block";
+  }
+
+  function showPosterImage(url, title) {
+    const posterImg = document.getElementById("posterImg");
+    const posterPlaceholder = document.getElementById("posterPlaceholder");
+
+    posterImg.style.display = "none";
+    posterPlaceholder.style.display = "block";
+
+    posterImg.onload = function () {
+      posterImg.style.display = "block";
+      posterPlaceholder.style.display = "none";
+    };
+
+    posterImg.onerror = showPosterPlaceholder;
+    posterImg.alt = `${title || "Film"} afişi`;
+    posterImg.src = url;
   }
 
   function applyFilm(f) {
@@ -397,19 +468,12 @@
     document.getElementById("actors").textContent = f.actors || "-";
     document.getElementById("filmMeta").style.display = "block";
 
-    const posterImg = document.getElementById("posterImg");
-    const posterPlaceholder = document.getElementById("posterPlaceholder");
-
-    const posterUrl = getSafeUrl(f.poster);
+    const posterUrl = getPosterUrl(f);
 
     if (posterUrl) {
-      posterImg.src = posterUrl;
-      posterImg.style.display = "block";
-      posterPlaceholder.style.display = "none";
+      showPosterImage(posterUrl, f.title);
     } else {
-      posterImg.removeAttribute("src");
-      posterImg.style.display = "none";
-      posterPlaceholder.style.display = "block";
+      showPosterPlaceholder();
     }
 
     const goBtn = document.getElementById("goBtn");
