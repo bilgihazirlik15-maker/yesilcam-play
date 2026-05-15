@@ -427,6 +427,7 @@
     const discoverGrid = document.getElementById("discoverGrid");
     const emptyState = document.getElementById("emptyState");
     const filmCountValue = document.getElementById("filmCountValue");
+    const MOVIE_COUNT_CACHE_KEY = "yesilcamTotalMovieCount";
 
     let allMovies = [];
 
@@ -503,6 +504,37 @@
       });
     }
 
+    function formatCount(value) {
+      return Number(value || 0).toLocaleString("tr-TR");
+    }
+
+    function readCachedMovieCount() {
+      try {
+        const cachedValue = localStorage.getItem(MOVIE_COUNT_CACHE_KEY);
+        const parsedValue = Number(cachedValue);
+
+        return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function cacheMovieCount(count) {
+      try {
+        localStorage.setItem(MOVIE_COUNT_CACHE_KEY, String(count));
+      } catch (error) {
+        // Cache is optional; ignore private browsing/quota errors.
+      }
+    }
+
+    function showCachedMovieCount() {
+      const cachedCount = readCachedMovieCount();
+
+      if (cachedCount !== null && filmCountValue) {
+        filmCountValue.textContent = formatCount(cachedCount);
+      }
+    }
+
     function animateCount(target) {
       if (!filmCountValue) return;
 
@@ -512,11 +544,11 @@
 
       const counter = setInterval(() => {
         current++;
-        filmCountValue.textContent = current;
+        filmCountValue.textContent = formatCount(current);
 
         if (current >= target) {
           clearInterval(counter);
-          filmCountValue.textContent = target;
+          filmCountValue.textContent = formatCount(target);
         }
       }, stepTime);
     }
@@ -524,6 +556,7 @@
     async function loadDiscover() {
       try {
         allMovies = await getMovies();
+        cacheMovieCount(allMovies.length);
         animateCount(allMovies.length);
         renderDiscover(getLatestMovies(allMovies, 8));
       } catch (error) {
@@ -533,6 +566,7 @@
       }
     }
 
+    showCachedMovieCount();
     loadDiscover();
 
     let secretClickCount = 0;
