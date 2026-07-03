@@ -12,4 +12,8 @@ Bu repo, `bilgihazirlik15-maker/github.io` arşivindeki canlı film verisini boz
 - `ne-izlesem.html`: rastgele film önerisi
 - `oyuncular.html`: oyuncu bazlı film rafları
 
+## Android TV
+
+`android-tv-app` klasörü, siteyi Android TV'de `Yeşilçam Arşivi` adıyla açan WebView tabanlı APK projesidir. Android Studio ile bu klasörü açıp APK üretebilirsiniz.
+
 `CNAME` dosyası özellikle eklenmemiştir; böylece özgün arşivin özel alan adı ayarı etkilenmez.
