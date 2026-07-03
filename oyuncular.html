@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oyuncular | Yeşilçam Play</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="netflix.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="logo.png" alt="" />Yeşilçam Play</a>
+        <nav class="nav" aria-label="Ana menü">
+          <a href="index.html">Ana Sayfa</a>
+          <a href="film-arama.html">Filmler</a>
+          <a href="ne-izlesem.html">Ne İzlesem?</a>
+          <a class="active" href="oyuncular.html">Oyuncular</a>
+        </nav>
+        <input class="quick-search" data-quick-search type="search" placeholder="Film ara" />
+      </div>
+    </header>
+    <main class="content" id="actorRows">
+      <h1 class="page-title">Oyuncular</h1>
+      <p class="muted">Oyuncu adlarına göre arşivdeki filmler.</p>
+      <section class="controls" aria-label="Oyuncu arama">
+        <input id="actorSearch" type="search" placeholder="Oyuncu ara" />
+      </section>
+    </main>
+    <footer class="footer">Yeşilçam Play</footer>
+  </div>
+  <script src="netflix.js"></script>
+  <script>
+    const actorRows = document.getElementById("actorRows");
+    const actorSearch = document.getElementById("actorSearch");
+    let movies = [];
+    function buildActors() {
+      const query = normalizeText(actorSearch.value);
+      const actorMap = new Map();
+      movies.forEach((movie) => {
+        String(movie.actors || "").split(",").map((actor) => actor.trim()).filter(Boolean).forEach((actor) => {
+          if (!actorMap.has(actor)) actorMap.set(actor, []);
+          actorMap.get(actor).push(movie);
+        });
+      });
+      document.querySelectorAll(".actor-row").forEach((row) => row.remove());
+      Array.from(actorMap.entries()).filter(([actor]) => !query || normalizeText(actor).includes(query)).sort((a, b) => a[0].localeCompare(b[0], "tr")).slice(0, 40).forEach(([actor, items]) => {
+        const section = document.createElement("section");
+        section.className = "row actor-row";
+        const head = document.createElement("div");
+        head.className = "row-head";
+        const title = document.createElement("h2");
+        title.textContent = actor;
+        const note = document.createElement("span");
+        note.className = "row-note";
+        note.textContent = `${items.length} film`;
+        const rail = document.createElement("div");
+        rail.className = "rail";
+        head.append(title, note);
+        section.append(head, rail);
+        actorRows.appendChild(section);
+        renderRail(rail, items);
+      });
+    }
+    async function initActors() {
+      movies = await getMovies();
+      setupQuickSearch(movies);
+      actorSearch.addEventListener("input", buildActors);
+      buildActors();
+    }
+    initActors().catch(() => {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "Arşiv verisi alınamadı.";
+      actorRows.appendChild(empty);
+    });
+  </script>
+</body>
+</html>

@@ -3,591 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yeşilçam Filmleri | Kişisel Yeşilçam Film Arşivi</title>
-  <meta name="description" content="Yeşilçam filmlerini, oyuncularını, dönemlerini ve izleme bağlantılarını keşfedebileceğiniz kişisel film arşivi." />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://yesilcamarsivi.com/" />
-  <meta property="og:locale" content="tr_TR" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Yeşilçam Filmleri" />
-  <meta property="og:title" content="Yeşilçam Filmleri | Kişisel Yeşilçam Film Arşivi" />
-  <meta property="og:description" content="Yeşilçam filmlerini sade bir arşiv düzeninde keşfedin; afişler, oyuncular, dönemler ve izleme bağlantılarına ulaşın." />
-  <meta property="og:url" content="https://yesilcamarsivi.com/" />
-  <meta property="og:image" content="https://yesilcamarsivi.com/logo.png" />
-  <meta property="og:image:alt" content="Yeşilçam Filmleri logosu" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Yeşilçam Filmleri | Kişisel Yeşilçam Film Arşivi" />
-  <meta name="twitter:description" content="Yeşilçam filmlerini, oyuncularını ve izleme bağlantılarını keşfedin." />
-  <meta name="twitter:image" content="https://yesilcamarsivi.com/logo.png" />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Yeşilçam Filmleri",
-      "url": "https://yesilcamarsivi.com/",
-      "description": "Yeşilçam filmleri için kişisel film arşivi ve keşif sitesi.",
-      "inLanguage": "tr-TR",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://yesilcamarsivi.com/film-arama.html?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-
+  <title>Yeşilçam Play | Film Arşivi</title>
+  <meta name="description" content="Yeşilçam filmlerini Netflix tarzı bir arayüzle keşfedin, arayın ve izleme bağlantılarına ulaşın." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-
-  <style>
-    :root {
-      --bg: #151313;
-      --surface: rgba(255,255,255,0.06);
-      --surface-soft: rgba(255,255,255,0.04);
-      --text: #f6f1e8;
-      --muted: #d5cbbb;
-      --line: rgba(255,255,255,0.12);
-      --accent: #c8a46a;
-      --max-width: 1200px;
-      --radius: 10px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: "Inter", sans-serif;
-      background:
-        radial-gradient(circle at top, rgba(200,164,106,0.10), transparent 26%),
-        linear-gradient(180deg, #171313 0%, #110f0f 100%);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    a { text-decoration: none; color: inherit; }
-
-    .container {
-      width: min(var(--max-width), 92%);
-      margin: 0 auto;
-    }
-
-    .site-header {
-      border-bottom: 1px solid var(--line);
-      background: rgba(17,15,15,0.9);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 18px 0 16px;
-      gap: 14px;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .brand-logo {
-      width: 84px;
-      height: 84px;
-      object-fit: contain;
-      display: block;
-      flex-shrink: 0;
-    }
-
-    .brand-name {
-      font-family: "Cinzel", serif;
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      line-height: 1;
-      color: var(--text);
-    }
-
-    .main-nav {
-      width: 100%;
-    }
-
-    .main-nav ul {
-      display: flex;
-      justify-content: center;
-      gap: 42px;
-      list-style: none;
-      flex-wrap: wrap;
-    }
-
-    .main-nav a {
-      font-size: 1rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding-bottom: 4px;
-      border-bottom: 1px solid transparent;
-      transition: 0.2s;
-    }
-
-    .main-nav a:hover,
-    .main-nav a.active {
-      color: var(--text);
-      border-color: var(--accent);
-    }
-
-    .intro {
-      padding: 56px 0 22px;
-    }
-
-    .intro-box {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface);
-      padding: 26px 28px;
-    }
-
-    .eyebrow {
-      display: inline-block;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    .intro-box h1 {
-      font-family: "Cinzel", serif;
-      font-size: clamp(2.2rem, 5vw, 3.6rem);
-      line-height: 1.1;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .intro-box p {
-      font-size: 1rem;
-      color: var(--muted);
-      max-width: none;
-      text-align: justify;
-      text-justify: inter-word;
-    }
-
-    .section {
-      padding: 12px 0 64px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 24px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .section-title {
-      font-family: "Cinzel", serif;
-      font-size: 2rem;
-      font-weight: 600;
-    }
-
-    .section-note {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-    }
-
-    .movie-card {
-      display: block;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: transform 0.18s ease, border-color 0.18s ease;
-      cursor: pointer;
-    }
-
-    .movie-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(200,164,106,0.36);
-    }
-
-    .movie-poster {
-      aspect-ratio: 2 / 3;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-color: #2a2323;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .movie-body {
-      padding: 14px 14px 16px;
-    }
-
-    .movie-title {
-      font-family: "Cinzel", serif;
-      font-size: 1.2rem;
-      line-height: 1.2;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .movie-year {
-  color: var(--muted);
-  font-size: 0.95rem;
-  margin-left: 4px;
-  font-family: "Cinzel", serif;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-    .empty-state {
-      margin-top: 10px;
-      padding: 18px 20px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 0.96rem;
-      display: none;
-    }
-
-    .empty-state.show {
-      display: block;
-    }
-
-    .refresh-wrap {
-      margin-top: 28px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .refresh-btn {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 12px 18px;
-      background: var(--surface);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .refresh-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    .site-footer {
-      border-top: 1px solid var(--line);
-      padding: 22px 0 30px;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .footer-inner strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    @media (max-width: 1100px) {
-      .discover-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    @media (max-width: 860px) {
-      .main-nav ul {
-        gap: 18px;
-      }
-
-      .discover-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .intro {
-        padding: 42px 0 22px;
-      }
-
-      .discover-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .section-title {
-        font-size: 1.7rem;
-      }
-
-      .brand-name {
-        font-size: 1.45rem;
-      }
-
-      .brand-logo {
-        width: 58px;
-        height: 58px;
-      }
-
-      .intro-box {
-        padding: 22px 20px;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="netflix.css" />
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="header-top">
-        <a href="index.html" class="brand" id="secretBrandLink">
-          <img src="logo.png" alt="Yeşilçam Filmleri logosu" class="brand-logo" />
-          <div class="brand-name">Yeşilçam Filmleri</div>
-        </a>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="logo.png" alt="" />Yeşilçam Play</a>
+        <nav class="nav" aria-label="Ana menü">
+          <a class="active" href="index.html">Ana Sayfa</a>
+          <a href="film-arama.html">Filmler</a>
+          <a href="ne-izlesem.html">Ne İzlesem?</a>
+          <a href="oyuncular.html">Oyuncular</a>
+        </nav>
+        <input class="quick-search" data-quick-search type="search" placeholder="Film ara" />
       </div>
+    </header>
 
-      <nav class="main-nav">
-        <ul>
-          <li><a class="active" href="index.html">Ana Sayfa</a></li>
-          <li><a href="film-arama.html">Film Arama</a></li>
-          <li><a href="ne-izlesem.html">Ne İzlesem?</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <section class="intro">
-      <div class="container">
-        <div class="intro-box">
-          <span class="eyebrow">Kişisel Film Arşivi</span>
-          <h1>Yeşilçam Filmleri</h1>
-          <p>
-            Yeşilçam’ın unutulmaz filmlerini sade bir düzen içinde keşfedin. Aşağıda arşivden rastgele seçilmiş filmleri görebilir, afişlerine tıklayarak detay sayfalarına geçebilirsiniz.
-          </p>
-          <p id="totalMovieCount" style="margin-top: 10px;">
-            Toplam Film Sayısı: <span id="filmCountValue">0</span>
-          </p>
+    <section class="hero" data-hero>
+      <div class="hero-content">
+        <div class="kicker">Yeşilçam Orijinali</div>
+        <h1 data-hero-title>Yeşilçam Play</h1>
+        <p class="hero-copy" data-hero-copy>Arşiv yükleniyor.</p>
+        <div class="meta-line" data-hero-meta></div>
+        <div class="actions">
+          <a class="btn primary" data-hero-play href="film-arama.html">Oynat</a>
+          <a class="btn ghost" data-hero-youtube href="#" target="_blank" rel="noopener noreferrer" hidden>YouTube</a>
+          <a class="btn ghost" href="film-arama.html">Tüm Filmler</a>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Son Eklenenler</h2>
-          <p class="section-note">Son eklenen 8 film</p>
+    <main class="content" id="rows">
+      <section class="row">
+        <div class="row-head">
+          <h2>Arşivden Öne Çıkanlar</h2>
+          <span class="row-note" id="movieCount"></span>
         </div>
+        <div class="rail" id="featuredRail"></div>
+      </section>
+    </main>
 
-        <div id="discoverGrid" class="discover-grid"></div>
+    <footer class="footer">Yeşilçam Play, mevcut arşiv verisini bozmadan Netflix tarzı bir sunum olarak hazırlanmıştır.</footer>
+  </div>
 
-        <div id="emptyState" class="empty-state">
-          Henüz kayıtlı film bulunmuyor. Önce yönetim panelinden film ekleyin.
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p><strong>Yeşilçam Filmleri</strong> — Kişisel bir film izleme ve arşivleme projesi.</p>
-      <p>Designed by Daen Yo, 2026</p>
-    </div>
-  </footer>
-
+  <script src="netflix.js"></script>
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
-
-    const discoverGrid = document.getElementById("discoverGrid");
-    const emptyState = document.getElementById("emptyState");
-    const filmCountValue = document.getElementById("filmCountValue");
-    const MOVIE_COUNT_CACHE_KEY = "yesilcamTotalMovieCount";
-
-    let allMovies = [];
-
-    async function getMovies() {
-      const response = await fetch(SCRIPT_URL);
-      const data = await response.json();
-      return data.movies || [];
-    }
-
-    function getLatestMovies(movies, count = 8) {
-      return [...movies].slice(-count).reverse();
-    }
-
-    function getSafeUrl(value) {
-      if (!value) return "";
-
-      try {
-        const url = new URL(String(value), window.location.href);
-        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
-      } catch (error) {
-        return "";
-      }
-    }
-
-    function setSafeBackgroundImage(element, urlValue) {
-      const safeUrl = getSafeUrl(urlValue);
-      element.style.backgroundImage = safeUrl ? `url("${safeUrl}")` : "none";
-    }
-
-    function createMovieCard(movie) {
-      const card = document.createElement("a");
-      card.className = "movie-card";
-      card.href = `movie.html?id=${encodeURIComponent(movie.id || "")}`;
-
-      const poster = document.createElement("div");
-      poster.className = "movie-poster";
-      setSafeBackgroundImage(poster, movie.poster);
-
-      const body = document.createElement("div");
-      body.className = "movie-body";
-
-      const title = document.createElement("div");
-      title.className = "movie-title";
-      title.append(document.createTextNode(movie.title || ""));
-
-      const yearText = movie.year !== undefined && movie.year !== null
-        ? String(movie.year).trim()
-        : "";
-
-      if (yearText) {
-        const year = document.createElement("span");
-        year.className = "movie-year";
-        year.textContent = `(${yearText})`;
-        title.append(document.createTextNode(" "), year);
-      }
-
-      body.appendChild(title);
-      card.append(poster, body);
-      return card;
-    }
-
-    function renderDiscover(movies) {
-      discoverGrid.replaceChildren();
-
-      if (!movies.length) {
-        emptyState.classList.add("show");
-        return;
-      }
-
-      emptyState.classList.remove("show");
-
-      movies.forEach((movie) => {
-        discoverGrid.appendChild(createMovieCard(movie));
+    async function initHome() {
+      const rows = document.getElementById("rows");
+      const movies = await getMovies();
+      setupQuickSearch(movies);
+      document.getElementById("movieCount").textContent = `${movies.length} film`;
+      const heroMovie = movies.find((movie) => getMoviePoster(movie) !== FALLBACK_IMAGE) || movies[0];
+      setHero(heroMovie);
+      renderRail(document.getElementById("featuredRail"), sampleMovies(movies, Math.min(16, movies.length)));
+      groupByGenre(movies).slice(0, 8).forEach(([genre, items]) => {
+        const section = document.createElement("section");
+        section.className = "row";
+        const head = document.createElement("div");
+        head.className = "row-head";
+        const title = document.createElement("h2");
+        title.textContent = genre;
+        const note = document.createElement("span");
+        note.className = "row-note";
+        note.textContent = `${items.length} film`;
+        const rail = document.createElement("div");
+        rail.className = "rail";
+        head.append(title, note);
+        section.append(head, rail);
+        rows.appendChild(section);
+        renderRail(rail, items);
       });
     }
-
-    function formatCount(value) {
-      return Number(value || 0).toLocaleString("tr-TR");
-    }
-
-    function readCachedMovieCount() {
-      try {
-        const cachedValue = localStorage.getItem(MOVIE_COUNT_CACHE_KEY);
-        const parsedValue = Number(cachedValue);
-
-        return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function cacheMovieCount(count) {
-      try {
-        localStorage.setItem(MOVIE_COUNT_CACHE_KEY, String(count));
-      } catch (error) {
-        // Cache is optional; ignore private browsing/quota errors.
-      }
-    }
-
-    function showCachedMovieCount() {
-      const cachedCount = readCachedMovieCount();
-
-      if (cachedCount !== null && filmCountValue) {
-        filmCountValue.textContent = formatCount(cachedCount);
-      }
-    }
-
-    function animateCount(target) {
-      if (!filmCountValue) return;
-
-      let current = 0;
-      const duration = 800;
-      const stepTime = Math.max(10, Math.floor(duration / Math.max(target, 1)));
-
-      const counter = setInterval(() => {
-        current++;
-        filmCountValue.textContent = formatCount(current);
-
-        if (current >= target) {
-          clearInterval(counter);
-          filmCountValue.textContent = formatCount(target);
-        }
-      }, stepTime);
-    }
-
-    async function loadDiscover() {
-      try {
-        allMovies = await getMovies();
-        cacheMovieCount(allMovies.length);
-        animateCount(allMovies.length);
-        renderDiscover(getLatestMovies(allMovies, 8));
-      } catch (error) {
-        discoverGrid.replaceChildren();
-        emptyState.classList.add("show");
-        emptyState.textContent = "Veriler alınamadı. Apps Script bağlantısını kontrol edin.";
-      }
-    }
-
-    showCachedMovieCount();
-    loadDiscover();
-
-    let secretClickCount = 0;
-    let secretClickTimer = null;
-
-    document.getElementById("secretBrandLink").addEventListener("click", function (e) {
-      e.preventDefault();
-
-      secretClickCount++;
-
-      if (secretClickCount === 5) {
-        sessionStorage.setItem("secretAdminEntry", "allowed");
-        window.location.href = "admin.html";
-        return;
-      }
-
-      clearTimeout(secretClickTimer);
-      secretClickTimer = setTimeout(() => {
-        secretClickCount = 0;
-      }, 2000);
+    initHome().catch(() => {
+      document.querySelector("[data-hero-copy]").textContent = "Arşiv verisi alınamadı. Veri kaynağı bağlantısını kontrol edin.";
     });
   </script>
 </body>
