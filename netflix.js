@@ -1,5 +1,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAO9iNli2uvZNySvsdMaSRRP9ogdLvLmgz_3AKc6jjl-3tRFNGjgT9y0V0EaXn07Xt/exec";
 const FALLBACK_IMAGE = "logo.png";
+const PREVIEW_SECONDS = 10;
+const PREVIEW_BASE_START = 30 * 60;
 let movieCache = null;
 
 async function getMovies() {
@@ -57,6 +59,32 @@ function getEmbedUrl(value) {
   return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : "";
 }
 
+function getPreviewStart(movie) {
+  const customStart = Number(movie.previewStart || movie.preview_start || movie.preview || 0);
+  if (Number.isFinite(customStart) && customStart > 0) return Math.floor(customStart);
+  const numericId = Number(movie.id || 0);
+  const offset = Number.isFinite(numericId) ? (numericId % 12) * 60 : 0;
+  return PREVIEW_BASE_START + offset;
+}
+
+function getPreviewEmbedUrl(movie) {
+  const id = getYouTubeId(movie.youtube || movie.youtubeUrl || movie.youtubeURL);
+  if (!id) return "";
+  const start = getPreviewStart(movie);
+  const end = start + PREVIEW_SECONDS;
+  const params = new URLSearchParams({
+    autoplay: "1",
+    mute: "1",
+    controls: "0",
+    playsinline: "1",
+    rel: "0",
+    modestbranding: "1",
+    start: String(start),
+    end: String(end)
+  });
+  return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?${params.toString()}`;
+}
+
 function getMoviePoster(movie) {
   const fields = ["poster", "posterUrl", "posterURL", "poster_url", "image", "img", "afis", "afiş", "gorsel", "görsel"];
   for (const field of fields) {
@@ -89,6 +117,12 @@ function createMovieCard(movie) {
     fallback.textContent = movie.title || "Yeşilçam";
     poster.appendChild(fallback);
   }
+  const previewUrl = getPreviewEmbedUrl(movie);
+  if (previewUrl) {
+    card.classList.add("has-preview");
+    card.setAttribute("aria-label", `${movie.title || "Film"} - 10 saniyelik ön izleme için üzerine gelin`);
+    attachHoverPreview(card, poster, previewUrl);
+  }
   const info = document.createElement("div");
   info.className = "poster-info";
   const title = document.createElement("div");
@@ -100,6 +134,41 @@ function createMovieCard(movie) {
   info.append(title, meta);
   card.append(poster, info);
   return card;
+}
+
+
+function attachHoverPreview(card, poster, previewUrl) {
+  let previewTimer = 0;
+  let cleanupTimer = 0;
+
+  function clearPreview() {
+    window.clearTimeout(previewTimer);
+    window.clearTimeout(cleanupTimer);
+    card.classList.remove("previewing");
+    poster.querySelector(".preview-frame")?.remove();
+  }
+
+  function startPreview() {
+    window.clearTimeout(previewTimer);
+    previewTimer = window.setTimeout(() => {
+      if (poster.querySelector(".preview-frame")) return;
+      const frame = document.createElement("iframe");
+      frame.className = "preview-frame";
+      frame.src = previewUrl;
+      frame.title = "10 saniyelik film ön izlemesi";
+      frame.loading = "lazy";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture";
+      frame.setAttribute("aria-hidden", "true");
+      poster.appendChild(frame);
+      card.classList.add("previewing");
+      cleanupTimer = window.setTimeout(clearPreview, PREVIEW_SECONDS * 1000);
+    }, 450);
+  }
+
+  card.addEventListener("mouseenter", startPreview);
+  card.addEventListener("mouseleave", clearPreview);
+  card.addEventListener("focusin", startPreview);
+  card.addEventListener("focusout", clearPreview);
 }
 
 function uniqueValues(movies, field, splitByComma = false) {
