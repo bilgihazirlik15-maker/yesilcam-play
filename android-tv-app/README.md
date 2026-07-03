@@ -4,6 +4,10 @@ Bu klasör, yayındaki web sitesini Android TV'de uygulama olarak açan basit bi
 
 ## APK üretme
 
+Android Studio yoksa repoda `Actions > Build Android TV APK > Run workflow` çalıştırın. İş bittikten sonra `yesilcam-arsivi-tv-apk` artifact dosyasını indirin ve içindeki `app-debug.apk` dosyasını kullanın.
+
+Android Studio varsa:
+
 1. Android Studio ile `android-tv-app` klasörünü açın.
 2. Gradle senkronizasyonunun bitmesini bekleyin.
 3. `Build > Build Bundle(s) / APK(s) > Build APK(s)` menüsünü çalıştırın.
