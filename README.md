@@ -1,4 +1,4 @@
-# Yeşilçam Play
+# Yeşilçam Arşivi
 
 Netflix tarzı Yeşilçam film arşivi arayüzü.
 
