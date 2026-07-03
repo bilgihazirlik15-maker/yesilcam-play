@@ -59,7 +59,8 @@
       const movies = await getMovies();
       setupQuickSearch(movies);
       document.getElementById("movieCount").textContent = `${movies.length} film`;
-      const heroMovie = movies.find((movie) => getMoviePoster(movie) !== FALLBACK_IMAGE) || movies[0];
+      const posterMovies = movies.filter((movie) => getMoviePoster(movie) !== FALLBACK_IMAGE);
+      const heroMovie = sampleMovies(posterMovies.length ? posterMovies : movies, 1)[0];
       setHero(heroMovie);
       renderRail(document.getElementById("featuredRail"), sampleMovies(movies, Math.min(16, movies.length)));
       groupByGenre(movies).slice(0, 8).forEach(([genre, items]) => {
